@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'sumitsinghrajk/jenkins-cicd-demo'
+        IMAGE_NAME = 'harshmit3190/jenkins-cicd-demo'
     }
 
     stages {
