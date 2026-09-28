@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'sumitsinghrajk/jenkins-cicd-demo'
+    }
+
     stages {
 
         stage('Build') {
@@ -20,13 +24,25 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t jenkins-cicd-demo:${BUILD_NUMBER} .'
+                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .'
+                sh 'docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest'
             }
         }
 
-        stage('Docker Test') {
+        stage('Docker Push') {
             steps {
-                sh 'docker images | grep jenkins-cicd-demo'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                        docker push ${IMAGE_NAME}:latest
+                        docker logout
+                    '''
+                }
             }
         }
     }
